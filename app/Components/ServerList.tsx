@@ -22,10 +22,9 @@ function NodeItem({node}: {node: Node}) {
     const connect = async ({ip}: {ip: string}) => {
         const res = await signMessage(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
-            let response = await axios.post('http://' + ip + ":8080/connect", res?.publicKey);
+            const res_string = res?.publicKey + '\n' + res?.sign;
+            let response = await axios.post('http://' + ip + ":8080/connect", res_string);
             console.log(response.data); // Log the response from the server
-            // response = await axios.post('http://' + ip + ":8080/connect", res?.sign);
-            // console.log(response.data); // Log the response from the server
         } catch (error) {
             console.error('Error:', error);
         }

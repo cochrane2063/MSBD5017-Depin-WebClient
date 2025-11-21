@@ -11,9 +11,10 @@ export const signMessage = async (provider: EIP1193Provider,userAccount: string)
             method: 'eth_getEncryptionPublicKey',
             params: [userAccount],
         })
-        
-        const bytes = new TextEncoder().encode(String(publicKey));
-        const msg = '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+         
+        // const bytes = new TextEncoder().encode(String(publicKey));
+        // const msg = '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        const msg = `0x${Buffer.from(String(publicKey), "utf8").toString("hex")}`
         const sign = await provider.request({
             method: "personal_sign",
             params: [msg, userAccount],
