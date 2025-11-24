@@ -1,4 +1,5 @@
 import type { EIP1193Provider } from './EthereumProviderTypes';
+import { Buffer } from 'buffer';
 
 // code from https://docs.metamask.io/wallet/how-to/sign-data/#use-personal_sign
 
