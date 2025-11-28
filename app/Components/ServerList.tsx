@@ -161,7 +161,24 @@ function NodeItem({node}: {node: Node}) {
 }
 
 export default function FolderList() {
-    const [nodes, setNodes] = React.useState([{ip: "57.158.82.48", traffic: 5, price: 10, rating: 3},{ip: "57.158.82.47", traffic: 3, price: 15, rating: 4},{ip: "57.158.82.49", traffic: 7, price: 20, rating: 5}]);
+    const [nodes, setNodes] = React.useState<Node[]>([
+        { ip: "57.158.82.48", traffic: 5, price: 10, rating: 3 },
+        { ip: "8.210.33.199", traffic: 3, price: 15, rating: 4 },
+        { ip: "45.77.12.5", traffic: 7, price: 20, rating: 5 },
+        { ip: "203.120.45.78", traffic: 2, price: 8, rating: 2 },
+        { ip: "91.189.88.25", traffic: 6, price: 12, rating: 4 },
+        { ip: "132.148.9.201", traffic: 9, price: 18, rating: 5 },
+        { ip: "60.12.180.99", traffic: 4, price: 14, rating: 3 },
+        { ip: "199.59.243.100", traffic: 1, price: 6, rating: 1 },
+        { ip: "34.216.77.3", traffic: 8, price: 22, rating: 5 },
+        { ip: "185.199.108.153", traffic: 5, price: 11, rating: 4 },
+        { ip: "13.107.21.200", traffic: 7, price: 16, rating: 4 },
+        { ip: "216.58.214.14", traffic: 3, price: 9, rating: 2 },
+        { ip: "104.21.44.33", traffic: 10, price: 25, rating: 5 },
+        { ip: "47.90.12.201", traffic: 2, price: 7, rating: 1 },
+        { ip: "23.45.67.89", traffic: 6, price: 13, rating: 3 },
+        { ip: "192.0.2.123", traffic: 4, price: 17, rating: 4 },
+    ]);
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
