@@ -9,7 +9,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StarIcon from '@mui/icons-material/Star';
 import Rating from '@mui/material/Rating';
 import useAuth from '~/hooks/useAuth';
-import { signMessage } from './Metamask/Connections';
+import { getPublicKey,signMessage } from './Metamask/Connections';
 import axios from 'axios';
 
 interface Node {
@@ -25,9 +25,10 @@ function NodeItem({node}: {node: Node}) {
     const [ratingValue, setRatingValue] = React.useState<number | null>(null);
     const [submittingRating, setSubmittingRating] = React.useState(false);
     const connect = async ({ip}: {ip: string}) => {
-        const res = await signMessage(auth.providerWithInfo.provider, auth.accounts[0]);
+        const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
+        const sig = await signMessage("test message",auth.providerWithInfo.provider, auth.accounts[0]);
         try {
-            const res_string = res?.publicKey + '\n' + res?.sign;
+            const res_string = publicKey + '\n' + sig;
             let response = await axios.post('http://' + ip + ":8080/connect", res_string);
             console.log(response.data); // Log the response from the server
         } catch (error) {
