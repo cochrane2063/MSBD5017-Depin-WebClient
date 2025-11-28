@@ -36,7 +36,6 @@ function NodeItem({node}: {node: Node}) {
     }
 
     const disconnect = ({ip}: {ip: string}) => {
-        // TODO check code
         setRatingOpen(true);
     }
 
@@ -51,12 +50,12 @@ function NodeItem({node}: {node: Node}) {
         }
         setSubmittingRating(true);
         try {
-            // await axios.post('http://' + node.ip + ":8080/rate", {
-            //     rating: ratingValue,
-            // }, {
-            //     headers: { "Content-Type": "application/json" }
-            // });
-            // console.log('Rating submitted');
+            await axios.post('http://' + node.ip + ":8080/rate", {
+                rating: ratingValue,
+            }, {
+                headers: { "Content-Type": "application/json" }
+            });
+            console.log('Rating submitted');
         } catch (err) {
             console.error('Failed to submit rating', err);
         } finally {
