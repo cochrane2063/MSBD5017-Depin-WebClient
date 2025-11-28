@@ -6,6 +6,7 @@ import { Grid, Card, CardContent, CardActions, Typography, Box, Chip, Dialog, Di
 import ServerIcon from '@mui/icons-material/Dns';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import StarIcon from '@mui/icons-material/Star';
 import Rating from '@mui/material/Rating';
 import useAuth from '~/hooks/useAuth';
 import { signMessage } from './Metamask/Connections';
@@ -15,6 +16,7 @@ interface Node {
   ip: string;
   traffic: number;
   price : number;
+  rating : number;
 }
 
 function NodeItem({node}: {node: Node}) {
@@ -101,6 +103,19 @@ function NodeItem({node}: {node: Node}) {
                             variant="outlined" 
                         />
                     </Box>
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <StarIcon color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                            Rating:
+                        </Typography>
+                        <Chip 
+                            label={node.rating} 
+                            size="small" 
+                            color={node.rating > 3 ? "success" : "warning"} 
+                            variant="outlined" 
+                        />
+                    </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
                     <ButtonGroup
@@ -147,7 +162,7 @@ function NodeItem({node}: {node: Node}) {
 }
 
 export default function FolderList() {
-    const [nodes, setNodes] = React.useState([{ip: "57.158.82.48", traffic: 5, price: 10},{ip: "57.158.82.47", traffic: 3, price: 15},{ip: "57.158.82.49", traffic: 7, price: 20}]);
+    const [nodes, setNodes] = React.useState([{ip: "57.158.82.48", traffic: 5, price: 10, rating: 3},{ip: "57.158.82.47", traffic: 3, price: 15, rating: 4},{ip: "57.158.82.49", traffic: 7, price: 20, rating: 5}]);
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
