@@ -2,7 +2,7 @@ import { Box, Card, CardContent, Typography, Link, Button, Avatar, Stack } from 
 import GitHubIcon from "@mui/icons-material/GitHub";
 
 export default function About() {
-  const repo = "https://github.com/";
+  const repo = "https://github.com/cochrane2063/MSBD5017-Depin-WebClient";
 
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
