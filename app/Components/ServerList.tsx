@@ -26,7 +26,7 @@ function NodeItem({node}: {node: Node}) {
     const [submittingRating, setSubmittingRating] = React.useState(false);
     const connect = async ({ip}: {ip: string}) => {
         const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
-        const sig = await signMessage("test message",auth.providerWithInfo.provider, auth.accounts[0]);
+        const sig = await signMessage("H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
         try {
             const res_string = publicKey + '\n' + sig;
             let response = await axios.post('http://' + ip + ":8080/connect", res_string);

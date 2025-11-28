@@ -28,7 +28,7 @@ export default function ButtonAppBar() {
   };
 
   const register = async () => {
-      const sig = await signMessage("test message",auth.providerWithInfo.provider, auth.accounts[0]);
+      const sig = await signMessage("H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
       try {
         const res_string = sig;
       } catch (error) {
