@@ -2,9 +2,11 @@ import * as React from 'react';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import { Grid, Card, CardContent, CardActions, Typography, Box, Chip } from "@mui/material";
+import { Grid, Card, CardContent, CardActions, Typography, Box, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
 import ServerIcon from '@mui/icons-material/Dns';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import Rating from '@mui/material/Rating';
 import useAuth from '~/hooks/useAuth';
 import { signMessage } from './Metamask/Connections';
 import axios from 'axios';
@@ -12,10 +14,14 @@ import axios from 'axios';
 interface Node {
   ip: string;
   traffic: number;
+  price : number;
 }
 
 function NodeItem({node}: {node: Node}) {
     const { auth } = useAuth();
+    const [ratingOpen, setRatingOpen] = React.useState(false);
+    const [ratingValue, setRatingValue] = React.useState<number | null>(null);
+    const [submittingRating, setSubmittingRating] = React.useState(false);
     const connect = async ({ip}: {ip: string}) => {
         const res = await signMessage(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
@@ -28,7 +34,33 @@ function NodeItem({node}: {node: Node}) {
     }
 
     const disconnect = ({ip}: {ip: string}) => {
-        console.log("Disconnect from ", ip);
+        // TODO check code
+        setRatingOpen(true);
+    }
+
+    const handleCloseRating = () => {
+        setRatingOpen(false);
+        setRatingValue(null);
+    };
+
+    const handleSubmitRating = async () => {
+        if (ratingValue == null) {
+            return;
+        }
+        setSubmittingRating(true);
+        try {
+            // await axios.post('http://' + node.ip + ":8080/rate", {
+            //     rating: ratingValue,
+            // }, {
+            //     headers: { "Content-Type": "application/json" }
+            // });
+            // console.log('Rating submitted');
+        } catch (err) {
+            console.error('Failed to submit rating', err);
+        } finally {
+            setSubmittingRating(false);
+            handleCloseRating();
+        }
     }
 
     return (
@@ -56,6 +88,19 @@ function NodeItem({node}: {node: Node}) {
                             variant="outlined" 
                         />
                     </Box>
+                    
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AttachMoneyIcon color="action" fontSize="small" />
+                        <Typography variant="body2" color="text.secondary">
+                            Price:
+                        </Typography>
+                        <Chip 
+                            label={node.price} 
+                            size="small" 
+                            color={node.price > 15 ? "warning" : "success"} 
+                            variant="outlined" 
+                        />
+                    </Box>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end', p: 2, pt: 0 }}>
                     <ButtonGroup
@@ -79,12 +124,30 @@ function NodeItem({node}: {node: Node}) {
                     </ButtonGroup>
                 </CardActions>
             </Card>
+
+            <Dialog open={ratingOpen} onClose={handleCloseRating}>
+                <DialogTitle>Rate this server</DialogTitle>
+                <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography component="span">Your rating:</Typography>
+                        <Rating
+                            name={`server-rating-${node.ip}`}
+                            value={ratingValue}
+                            onChange={(_, newValue) => setRatingValue(newValue)}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseRating} disabled={submittingRating}>Cancel</Button>
+                    <Button onClick={handleSubmitRating} disabled={submittingRating || ratingValue == null} variant="contained">Submit</Button>
+                </DialogActions>
+            </Dialog>
         </Grid>
     );
 }
 
 export default function FolderList() {
-    const [nodes, setNodes] = React.useState([{ip: "57.158.82.48", traffic: 5},{ip: "10.0.0.3", traffic: 3},{ip: "10.0.0.4", traffic: 7}]);
+    const [nodes, setNodes] = React.useState([{ip: "57.158.82.48", traffic: 5, price: 10},{ip: "57.158.82.47", traffic: 3, price: 15},{ip: "57.158.82.49", traffic: 7, price: 20}]);
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
