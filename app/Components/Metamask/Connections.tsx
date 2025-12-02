@@ -24,8 +24,6 @@ export const signMessage = async (message: string,provider: EIP1193Provider,user
             params: [msg, userAccount],
         })
 
-        console.log("Encoded Public Key: ", msg);
-
         return sig;
     } catch (err) {
         console.error(err)

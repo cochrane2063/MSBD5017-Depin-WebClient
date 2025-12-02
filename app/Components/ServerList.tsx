@@ -20,23 +20,39 @@ interface Node {
 }
 
 function NodeItem({node}: {node: Node}) {
+    const port = 8080;
     const { auth } = useAuth();
     const [ratingOpen, setRatingOpen] = React.useState(false);
     const [ratingValue, setRatingValue] = React.useState<number | null>(null);
     const [submittingRating, setSubmittingRating] = React.useState(false);
-    const connect = async ({ip}: {ip: string}) => {
-        const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
-        const sig = await signMessage("H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
+    const getUrl = () => `http://${node.ip}:${port}`;
+    const connect = async () => {
+        // const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
-            const res_string = publicKey + '\n' + sig;
-            let response = await axios.post('http://' + ip + ":8080/connect", res_string);
-            console.log(response.data); // Log the response from the server
+            const iv = await axios.get(getUrl() + "/connect");
+            console.log(iv.data);
+
+            const sig = await signMessage(iv.data + "H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = iv.data + '\n' + "H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=" + '\n' + sig;
+            let response = await axios.post(getUrl() + "/connect", res_string);
+            console.log(response.data);
         } catch (error) {
             console.error('Error:', error);
         }
     }
 
-    const disconnect = ({ip}: {ip: string}) => {
+    const disconnect = async () => {
+        try{
+            const iv = await axios.get(getUrl() + "/disconnect");
+            console.log(iv.data);
+
+            const sig = await signMessage(iv.data,auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = iv.data + '\n' + sig;
+            let response = await axios.post(getUrl() + "/disconnect", res_string);
+            console.log(response.data); 
+        } catch (error) {
+            console.error('Error:', error);
+        }
         setRatingOpen(true);
     }
 
@@ -124,14 +140,14 @@ function NodeItem({node}: {node: Node}) {
                         size="small"
                     >
                         <Button 
-                            onClick={() => disconnect({ip: node.ip})} 
+                            onClick={() => disconnect()} 
                             color="error" 
                             variant="outlined"
                         >
                             Disconnect
                         </Button>
                         <Button 
-                            onClick={() => connect({ip: node.ip})}
+                            onClick={() => connect()}
                             color="primary"
                         >
                             Connect
