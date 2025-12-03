@@ -9,7 +9,8 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StarIcon from '@mui/icons-material/Star';
 import Rating from '@mui/material/Rating';
 import useAuth from '~/hooks/useAuth';
-import { getPublicKey,signMessage } from './Metamask/Connections';
+import { signMessage } from './Metamask/Connections';
+import { downloadWireguardConfig } from './WireguardConfig';
 import axios from 'axios';
 
 interface Node {
@@ -36,6 +37,7 @@ function NodeItem({node}: {node: Node}) {
             const res_string = iv.data + '\n' + "H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=" + '\n' + sig;
             let response = await axios.post(getUrl() + "/connect", res_string);
             console.log(response.data);
+            downloadWireguardConfig("", "", "", "", node.ip, "51820", "0.0.0.0/0");
         } catch (error) {
             console.error('Error:', error);
         }
