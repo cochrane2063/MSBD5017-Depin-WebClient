@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useState } from "react";
 import { useSyncProviders } from "./useSyncProviders";
 import useAuth from "~/hooks/useAuth";
@@ -123,4 +122,3 @@ export const DiscoverWalletProviders: React.FC = () => {
 };
 
 export default DiscoverWalletProviders;
-// ...existing code...

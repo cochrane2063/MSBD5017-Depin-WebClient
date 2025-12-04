@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router";
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -7,13 +7,16 @@ import Button from "@mui/material/Button";
 import LoginIcon from "@mui/icons-material/Login";
 import { Typography, Menu, MenuItem, IconButton, Avatar, Tooltip } from "@mui/material";
 import useAuth from "~/hooks/useAuth";
-import { signMessage } from './Metamask/Connections';
+import type { PaymentChannelInfo } from './Util';
+import { approveCLRTokenSpending, openPaymentChannel, closePaymentChannel, getPaymentChannelInfo } from './Contracts/Connections';
 
 export default function ButtonAppBar() {
   const { auth, setAuth } = useAuth();
   const account = auth?.accounts?.[0];
   const isAuthed = Boolean(account);
 
+  const [paymentChannelInfo, setPaymentChannelInfo] = React.useState<PaymentChannelInfo | null>(null);
+  const [registered, setRegistered] = React.useState<boolean>(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
@@ -27,13 +30,27 @@ export default function ButtonAppBar() {
   };
 
   const register = async () => {
-      const sig = await signMessage("H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
-      try {
-        const res_string = sig;
-      } catch (error) {
-        console.error('Error:', error);
-      }
+    const clr_deposit_amount = BigInt(10000) * BigInt(1e18); // 10000 CLR
+    await approveCLRTokenSpending(auth.providerWithInfo.provider, account!);
+    await openPaymentChannel(auth.providerWithInfo.provider, account!, clr_deposit_amount);
+    setRegistered(true);
   }
+
+  const deRegister = async () => {
+    await closePaymentChannel(auth.providerWithInfo.provider, account!);
+    setRegistered(false);
+  }
+
+  useEffect(() => {
+    getPaymentChannelInfo(auth.providerWithInfo ? auth.providerWithInfo.provider : undefined, account!).then((info) => {
+      setPaymentChannelInfo(info);
+      if(registered !== info.isActive) {
+        setRegistered(info.isActive);
+      }
+      console.log("Payment Channel Info:", info);
+    });
+  }, [account, auth.providerWithInfo?.provider,registered]);
+
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -78,8 +95,7 @@ export default function ButtonAppBar() {
                 Login
               </Button>
             )}
-
-            {}
+            
             {isAuthed && (
               <>
                 <Tooltip title={account ? `Account: ${account}` : "Account"}>
@@ -105,7 +121,7 @@ export default function ButtonAppBar() {
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <MenuItem onClick={register}>Register</MenuItem>
+                  {(paymentChannelInfo && paymentChannelInfo.isActive) ? (<MenuItem onClick={deRegister}>DeRegister</MenuItem>) : (<MenuItem onClick={register}>Register</MenuItem>)} 
                   <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
               </>

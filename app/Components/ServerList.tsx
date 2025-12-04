@@ -2,27 +2,41 @@ import * as React from 'react';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import { Grid, Card, CardContent, CardActions, Typography, Box, Chip, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
+import {
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Box,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
+  CircularProgress,
+} from "@mui/material";
 import ServerIcon from '@mui/icons-material/Dns';
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import StarIcon from '@mui/icons-material/Star';
 import Rating from '@mui/material/Rating';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import useAuth from '~/hooks/useAuth';
+import type { AccountInfo } from '~/context/AuthProvider';
 import { signMessage } from './Metamask/Connections';
-import { downloadWireguardConfig } from './WireguardConfig';
+import { generateWireguardKeyPair, downloadWireguardConfig } from './WireguardConfig';
+import type { Node } from './Util';
+import { getActiveNodes } from './Contracts/Connections';
 import axios from 'axios';
+import { useEffect } from 'react';
 
-interface Node {
-  ip: string;
-  traffic: number;
-  price : number;
-  rating : number;
-}
 
-function NodeItem({node}: {node: Node}) {
+
+function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
     const port = 8080;
-    const { auth } = useAuth();
     const [ratingOpen, setRatingOpen] = React.useState(false);
     const [ratingValue, setRatingValue] = React.useState<number | null>(null);
     const [submittingRating, setSubmittingRating] = React.useState(false);
@@ -31,13 +45,16 @@ function NodeItem({node}: {node: Node}) {
         // const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
             const iv = await axios.get(getUrl() + "/connect");
-            console.log(iv.data);
+            const { privatekey: clientPrivateKey, publicKey: clientPublicKey } = generateWireguardKeyPair();
 
-            const sig = await signMessage(iv.data + "H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=",auth.providerWithInfo.provider, auth.accounts[0]);
-            const res_string = iv.data + '\n' + "H8zfXnSclIQ/wLy7GSt7GNqa1utAi4Uvr7Dg3p9vdHQ=" + '\n' + sig;
+            const sig = await signMessage(iv.data + clientPublicKey,auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = iv.data + '\n' + clientPublicKey + '\n' + sig;
             let response = await axios.post(getUrl() + "/connect", res_string);
+            const clientCIDR = response.data.WireguardClientCIDR;
+            const serverPublicKey = response.data.WireguardServerPublicKey;
+            const dns = response.data.WireguardDNS;
             console.log(response.data);
-            downloadWireguardConfig("", "", "", "", node.ip, "51820", "0.0.0.0/0");
+            downloadWireguardConfig(clientPrivateKey, serverPublicKey, clientCIDR, dns, node.ip, String(node.port), "0.0.0.0/0");
         } catch (error) {
             console.error('Error:', error);
         }
@@ -180,33 +197,69 @@ function NodeItem({node}: {node: Node}) {
 }
 
 export default function FolderList() {
-    const [nodes, setNodes] = React.useState<Node[]>([
-        { ip: "57.158.82.48", traffic: 5, price: 10, rating: 3 },
-        { ip: "8.210.33.199", traffic: 3, price: 15, rating: 4 },
-        { ip: "45.77.12.5", traffic: 7, price: 20, rating: 5 },
-        { ip: "203.120.45.78", traffic: 2, price: 8, rating: 2 },
-        { ip: "91.189.88.25", traffic: 6, price: 12, rating: 4 },
-        { ip: "132.148.9.201", traffic: 9, price: 18, rating: 5 },
-        { ip: "60.12.180.99", traffic: 4, price: 14, rating: 3 },
-        { ip: "199.59.243.100", traffic: 1, price: 6, rating: 1 },
-        { ip: "34.216.77.3", traffic: 8, price: 22, rating: 5 },
-        { ip: "185.199.108.153", traffic: 5, price: 11, rating: 4 },
-        { ip: "13.107.21.200", traffic: 7, price: 16, rating: 4 },
-        { ip: "216.58.214.14", traffic: 3, price: 9, rating: 2 },
-        { ip: "104.21.44.33", traffic: 10, price: 25, rating: 5 },
-        { ip: "47.90.12.201", traffic: 2, price: 7, rating: 1 },
-        { ip: "23.45.67.89", traffic: 6, price: 13, rating: 3 },
-        { ip: "192.0.2.123", traffic: 4, price: 17, rating: 4 },
-    ]);
+    const { auth } = useAuth();
+    const [nodes, setNodes] = React.useState<Node[]>([]);
+    const [loading, setLoading] = React.useState(false);
+    const fetchNodes = React.useCallback(async () => {
+        setLoading(true);
+        try {
+            const provider = auth?.providerWithInfo?.provider;
+            const fetchedNodes = await getActiveNodes(provider);
+            setNodes(fetchedNodes);
+        } catch (err) {
+            console.error("Failed to fetch nodes", err);
+        } finally {
+            setLoading(false);
+        }
+    }, [auth]);
+
+    useEffect(() => {
+        fetchNodes();
+    }, [fetchNodes]);
+    // const [nodes, setNodes] = React.useState<Node[]>([
+    //     { ip: "57.158.82.48", traffic: 5, price: 10, rating: 3 },
+    //     { ip: "8.210.33.199", traffic: 3, price: 15, rating: 4 },
+    //     { ip: "45.77.12.5", traffic: 7, price: 20, rating: 5 },
+    //     { ip: "203.120.45.78", traffic: 2, price: 8, rating: 2 },
+    //     { ip: "91.189.88.25", traffic: 6, price: 12, rating: 4 },
+    //     { ip: "132.148.9.201", traffic: 9, price: 18, rating: 5 },
+    //     { ip: "60.12.180.99", traffic: 4, price: 14, rating: 3 },
+    //     { ip: "199.59.243.100", traffic: 1, price: 6, rating: 1 },
+    //     { ip: "34.216.77.3", traffic: 8, price: 22, rating: 5 },
+    //     { ip: "185.199.108.153", traffic: 5, price: 11, rating: 4 },
+    //     { ip: "13.107.21.200", traffic: 7, price: 16, rating: 4 },
+    //     { ip: "216.58.214.14", traffic: 3, price: 9, rating: 2 },
+    //     { ip: "104.21.44.33", traffic: 10, price: 25, rating: 5 },
+    //     { ip: "47.90.12.201", traffic: 2, price: 7, rating: 1 },
+    //     { ip: "23.45.67.89", traffic: 6, price: 13, rating: 3 },
+    //     { ip: "192.0.2.123", traffic: 4, price: 17, rating: 4 },
+    // ]);
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
-            <Typography variant="h4" gutterBottom component="div" sx={{ mb: 4, fontWeight: 'bold' }}>
-                Available Servers
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h4" component="div" sx={{ fontWeight: 'bold' }}>
+                    Available Servers
+                </Typography>
+
+                <Box>
+                  <Tooltip title="Refresh servers">
+                    <span>
+                      <IconButton
+                        onClick={fetchNodes}
+                        disabled={loading || auth?.providerWithInfo === undefined}
+                        color="primary"
+                        aria-label="refresh servers"
+                      >
+                        {loading ? <CircularProgress size={20} /> : <RefreshIcon />}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Box>
+            </Box>
             <Grid container spacing={3}>
                 {nodes.map((node, index) => (
-                    <NodeItem key={index} node={node} />
+                    <NodeItem key={index} node={node} auth={auth}/>
                 ))}
             </Grid>
         </Box>

@@ -18,9 +18,11 @@
     "axios": "^1.13.2",
     "buffer": "^6.0.3",
     "isbot": "^5.1.31",
+    "noble-ed25519": "^1.2.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.9.2",
+    "tweetnacl": "^1.0.3",
     "web3": "^4.16.0"
   },
   "devDependencies": {
