@@ -36,11 +36,10 @@ import { useEffect } from 'react';
 
 
 function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
-    const port = 8080;
     const [ratingOpen, setRatingOpen] = React.useState(false);
     const [ratingValue, setRatingValue] = React.useState<number | null>(null);
     const [submittingRating, setSubmittingRating] = React.useState(false);
-    const getUrl = () => `http://${node.ip}:${port}`;
+    const getUrl = () => `http://${node.ip}:${node.port}`;
     const connect = async () => {
         // const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
@@ -52,9 +51,10 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
             let response = await axios.post(getUrl() + "/connect", res_string);
             const clientCIDR = response.data.WireguardClientCIDR;
             const serverPublicKey = response.data.WireguardServerPublicKey;
+            const peerPort = response.data.WireguardPort;
             const dns = response.data.WireguardDNS;
             console.log(response.data);
-            downloadWireguardConfig(clientPrivateKey, serverPublicKey, clientCIDR, dns, node.ip, String(node.port), "0.0.0.0/0");
+            downloadWireguardConfig(clientPrivateKey, serverPublicKey, clientCIDR, dns, node.ip, String(peerPort), "0.0.0.0/0");
         } catch (error) {
             console.error('Error:', error);
         }
