@@ -1,7 +1,7 @@
 import { Web3 } from 'web3';
 import type { Node, NodeInfo, PaymentChannelInfo } from '../Util';
 import clearNetJson from './ClearNet/ClearNet.json';
-import clrTokenJson from './CLRTOKEN/CLRToken.json';
+import clrTokenJson from './CLRToken/CLRToken.json';
 
 const clearNetABI = (clearNetJson as any).abi ?? clearNetJson;
 const clrTokenABI = (clrTokenJson as any).abi ?? clrTokenJson;
