@@ -1,5 +1,3 @@
-// useSyncProviders.tsx
-
 import { useSyncExternalStore } from "react";
 import { store } from "./store";
 

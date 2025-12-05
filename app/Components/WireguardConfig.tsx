@@ -1,4 +1,3 @@
-// import { utils } from 'noble-ed25519';
 import nacl from "tweetnacl";
 
 function bytesToBase64(bytes: Uint8Array) {
