@@ -54,6 +54,31 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "client",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "connectionStartTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "abortTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "ConnectionAborted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "currentGovernance",
         "type": "address"
       },
@@ -217,6 +242,25 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "ownerAccount",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "OwnerShareAccrued",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -348,37 +392,23 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "relayShare",
+        "name": "ownerShare",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "ratingProvided",
+        "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rating",
         "type": "uint256"
       }
     ],
     "name": "PaymentProcessed",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      }
-    ],
-    "name": "RelayOperatorAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      }
-    ],
-    "name": "RelayOperatorRemoved",
     "type": "event"
   },
   {
@@ -412,6 +442,19 @@
     ],
     "name": "Unpaused",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "ABORT_WINDOW",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -532,46 +575,7 @@
   },
   {
     "inputs": [],
-    "name": "RELAY_SHARE",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "REPUTATION_DECREMENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "REPUTATION_INCREMENT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "REPUTATION_PRECISION",
+    "name": "OWNER_SHARE",
     "outputs": [
       {
         "internalType": "uint256",
@@ -606,6 +610,34 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "vpnClientPublicKey",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_connectionStartTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_agreedPricePerMinute",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "_clientSignature",
+        "type": "bytes"
+      }
+    ],
+    "name": "abortConnection",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -651,19 +683,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_relay",
-        "type": "address"
-      }
-    ],
-    "name": "addRelayOperator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -802,6 +821,34 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getContractStats",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "totalNodes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalChannels",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalMinutes",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "treasuryBalance",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -903,12 +950,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_address",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "_messageHash",
+        "type": "bytes32"
       }
     ],
-    "name": "isRelayOperator",
+    "name": "isSignatureUsed",
     "outputs": [
       {
         "internalType": "bool",
@@ -972,6 +1019,16 @@
       {
         "internalType": "uint256",
         "name": "lastActivity",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalRatingValue",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalRatingCount",
         "type": "uint256"
       }
     ],
@@ -1079,13 +1136,28 @@
         "type": "address"
       },
       {
+        "internalType": "string",
+        "name": "vpnClientPublicKey",
+        "type": "string"
+      },
+      {
         "internalType": "uint256",
-        "name": "_minutesUsed",
+        "name": "_connectionStartTime",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "_nonce",
+        "name": "_agreedPricePerMinute",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_ratingProvided",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_rating",
         "type": "uint256"
       },
       {
@@ -1096,11 +1168,6 @@
       {
         "internalType": "bytes",
         "name": "_nodeSignature",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes",
-        "name": "_relaySignature",
         "type": "bytes"
       }
     ],
@@ -1128,38 +1195,6 @@
       }
     ],
     "name": "registerNode",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "relayOperators",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_relay",
-        "type": "address"
-      }
-    ],
-    "name": "removeRelayOperator",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1242,6 +1277,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "uintToString",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "unpause",
     "outputs": [],
@@ -1275,24 +1329,6 @@
       }
     ],
     "name": "updatePrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_nodeID",
-        "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_successfulSession",
-        "type": "bool"
-      }
-    ],
-    "name": "updateReputation",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

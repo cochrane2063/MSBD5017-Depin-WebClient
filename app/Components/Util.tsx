@@ -1,9 +1,11 @@
 
 export interface Node {
+  address: string;
   ip: string;
   port: number;
   traffic: number;
   price : number;
+  pricePerMinute : BigInt;
   rating : number;
 }
 

@@ -29,9 +29,10 @@ import type { AccountInfo } from '~/context/AuthProvider';
 import { signMessage } from './Metamask/Connections';
 import { generateWireguardKeyPair, downloadWireguardConfig } from './WireguardConfig';
 import type { Node } from './Util';
-import { getActiveNodes, getNextNonce } from './Contracts/Connections';
+import { getActiveNodes, getNextNonce, processPayment, abortConnection } from './Contracts/Connections';
 import axios from 'axios';
 import { useEffect } from 'react';
+import { Web3 } from 'web3';
 
 
 
@@ -39,19 +40,46 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
     const [ratingOpen, setRatingOpen] = React.useState(false);
     const [ratingValue, setRatingValue] = React.useState<number | null>(null);
     const [submittingRating, setSubmittingRating] = React.useState(false);
+    let nodeSignature = "";
     const getUrl = () => `http://${node.ip}:${node.port}`;
     const connect = async () => {
         try {
             const { privatekey: clientPrivateKey, publicKey: clientPublicKey } = generateWireguardKeyPair();
             const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
-            const sig = await signMessage(nonce + clientPublicKey,auth.providerWithInfo.provider, auth.accounts[0]);
-            const res_string = nonce + '\n' + clientPublicKey + '\n' + sig;
+            const connectionStartTime = Math.floor(Date.now() / 1000);
+            console.log("Nonce:", nonce.toString());
+            const sig = await signMessage(nonce + clientPublicKey + connectionStartTime + node.pricePerMinute,auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = nonce + '\n' + clientPublicKey + '\n' + connectionStartTime + '\n' + node.pricePerMinute + '\n' + sig;
             let response = await axios.post(getUrl() + "/connect", res_string);
             const clientCIDR = response.data.WireguardClientCIDR;
             const serverPublicKey = response.data.WireguardServerPublicKey;
             const peerPort = response.data.WireguardPort;
             const dns = response.data.WireguardDNS;
             console.log(response.data);
+            if(response.data.NodeSignature){
+                const provider = auth.providerWithInfo.provider;
+                const web3 = new Web3(provider);
+                const recoveredAddress = web3.eth.accounts.recover(nonce.toString() + connectionStartTime + node.pricePerMinute, response.data.NodeSignature);
+                if(recoveredAddress === node.address){
+                    nodeSignature = response.data.NodeSignature;
+                }
+            }
+            if(nodeSignature === ""){
+                await abortConnection(auth.providerWithInfo.provider, auth.accounts[0],
+                    clientPublicKey,
+                    BigInt(connectionStartTime),
+                    node.pricePerMinute,
+                    String(sig)
+                );
+                return;
+            }
+            localStorage.setItem(node.address, JSON.stringify({
+                vpnClientPublicKey: clientPublicKey,
+                connectionStartTime: connectionStartTime,
+                agreedPricePerMinute: node.pricePerMinute.toString(),
+                clientSignature: String(sig),
+                nodeSignature: nodeSignature
+            }));
             downloadWireguardConfig(clientPrivateKey, serverPublicKey, clientCIDR, dns, node.ip, String(peerPort), "0.0.0.0/0");
         } catch (error) {
             console.error('Error:', error);
@@ -60,11 +88,28 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
 
     const disconnect = async () => {
         try{
-            const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
-            const sig = await signMessage(String(nonce),auth.providerWithInfo.provider, auth.accounts[0]);
-            const res_string = String(nonce) + '\n' + sig;
-            let response = await axios.post(getUrl() + "/disconnect", res_string);
-            console.log(response.data); 
+            // const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
+            // const sig = await signMessage(String(nonce),auth.providerWithInfo.provider, auth.accounts[0]);
+            // const res_string = String(nonce) + '\n' + sig;
+            // let response = await axios.post(getUrl() + "/disconnect", res_string);
+            // console.log(response.data);
+            const storedInfo = localStorage.getItem(node.address);
+            if(!storedInfo){
+                console.error("No active connection info");
+                return;
+            }
+            const connectionInfo = JSON.parse(storedInfo);
+            await processPayment(auth.providerWithInfo.provider, auth.accounts[0],
+                node.address,
+                connectionInfo.vpnClientPublicKey,
+                BigInt(connectionInfo.connectionStartTime),
+                BigInt(connectionInfo.agreedPricePerMinute),
+                false,
+                BigInt(0),
+                connectionInfo.clientSignature,
+                connectionInfo.nodeSignature
+            );
+            localStorage.removeItem(node.address);
         } catch (error) {
             console.error('Error:', error);
         }
