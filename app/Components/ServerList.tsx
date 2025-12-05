@@ -29,7 +29,7 @@ import type { AccountInfo } from '~/context/AuthProvider';
 import { signMessage } from './Metamask/Connections';
 import { generateWireguardKeyPair, downloadWireguardConfig } from './WireguardConfig';
 import type { Node } from './Util';
-import { getActiveNodes } from './Contracts/Connections';
+import { getActiveNodes, getNextNonce } from './Contracts/Connections';
 import axios from 'axios';
 import { useEffect } from 'react';
 
@@ -41,13 +41,11 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
     const [submittingRating, setSubmittingRating] = React.useState(false);
     const getUrl = () => `http://${node.ip}:${node.port}`;
     const connect = async () => {
-        // const publicKey = await getPublicKey(auth.providerWithInfo.provider, auth.accounts[0]);
         try {
-            const iv = await axios.get(getUrl() + "/connect");
             const { privatekey: clientPrivateKey, publicKey: clientPublicKey } = generateWireguardKeyPair();
-
-            const sig = await signMessage(iv.data + clientPublicKey,auth.providerWithInfo.provider, auth.accounts[0]);
-            const res_string = iv.data + '\n' + clientPublicKey + '\n' + sig;
+            const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
+            const sig = await signMessage(nonce + clientPublicKey,auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = nonce + '\n' + clientPublicKey + '\n' + sig;
             let response = await axios.post(getUrl() + "/connect", res_string);
             const clientCIDR = response.data.WireguardClientCIDR;
             const serverPublicKey = response.data.WireguardServerPublicKey;
@@ -62,11 +60,9 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
 
     const disconnect = async () => {
         try{
-            const iv = await axios.get(getUrl() + "/disconnect");
-            console.log(iv.data);
-
-            const sig = await signMessage(iv.data,auth.providerWithInfo.provider, auth.accounts[0]);
-            const res_string = iv.data + '\n' + sig;
+            const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
+            const sig = await signMessage(String(nonce),auth.providerWithInfo.provider, auth.accounts[0]);
+            const res_string = String(nonce) + '\n' + sig;
             let response = await axios.post(getUrl() + "/disconnect", res_string);
             console.log(response.data); 
         } catch (error) {

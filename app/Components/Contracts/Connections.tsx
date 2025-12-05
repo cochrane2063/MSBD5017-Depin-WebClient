@@ -85,3 +85,8 @@ export async function getPaymentChannelInfo(provider: any,account: string) : Pro
         isActive: channelInfo.isActive,
     };
 }
+
+export async function getNextNonce(provider: any,account: string) : Promise<BigInt> {
+    const channelInfo = await getPaymentChannelInfo(provider, account);
+    return channelInfo.nonce.valueOf() + BigInt(1);
+}
