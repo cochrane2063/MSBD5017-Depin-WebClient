@@ -86,26 +86,26 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
         }
     }
 
-    const disconnect = async () => {
+    const sendPayment = async (isRatingProvided: boolean, rating: BigInt) => {
         try{
-            // const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
-            // const sig = await signMessage(String(nonce),auth.providerWithInfo.provider, auth.accounts[0]);
-            // const res_string = String(nonce) + '\n' + sig;
-            // let response = await axios.post(getUrl() + "/disconnect", res_string);
-            // console.log(response.data);
             const storedInfo = localStorage.getItem(node.address);
             if(!storedInfo){
                 console.error("No active connection info");
                 return;
             }
             const connectionInfo = JSON.parse(storedInfo);
+            if (isRatingProvided) {
+                const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
+                connectionInfo.clientSignature = await signMessage(nonce + connectionInfo.vpnClientPublicKey + connectionInfo.connectionStartTime + connectionInfo.agreedPricePerMinute + rating,auth.providerWithInfo.provider, auth.accounts[0]);
+                localStorage.setItem(node.address,JSON.stringify(connectionInfo))
+            }
             await processPayment(auth.providerWithInfo.provider, auth.accounts[0],
                 node.address,
                 connectionInfo.vpnClientPublicKey,
                 BigInt(connectionInfo.connectionStartTime),
                 BigInt(connectionInfo.agreedPricePerMinute),
-                false,
-                BigInt(0),
+                isRatingProvided,
+                rating,
                 connectionInfo.clientSignature,
                 connectionInfo.nodeSignature
             );
@@ -113,7 +113,25 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
         } catch (error) {
             console.error('Error:', error);
         }
+    }
+
+    const disconnect = async () => {
+        // try{
+        //     const nonce: BigInt = await getNextNonce(auth.providerWithInfo.provider, auth.accounts[0]);
+        //     const sig = await signMessage(String(nonce),auth.providerWithInfo.provider, auth.accounts[0]);
+        //     const res_string = String(nonce) + '\n' + sig;
+        //     let response = await axios.post(getUrl() + "/disconnect", res_string);
+        //     console.log(response.data);
+        // } catch (error) {
+        //     console.error('Error:', error);
+        // }
         setRatingOpen(true);
+    }
+
+    const handleNoRating = () => {
+        console.log("no rating");
+        sendPayment(false, BigInt(0));
+        handleCloseRating()
     }
 
     const handleCloseRating = () => {
@@ -121,24 +139,17 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
         setRatingValue(null);
     };
 
-    const handleSubmitRating = async () => {
+    const handleSubmitRating = () => {
         if (ratingValue == null) {
+            console.log("no rating value");
+            sendPayment(false, BigInt(0));
             return;
         }
+        console.log("submit rating:", ratingValue);
         setSubmittingRating(true);
-        try {
-            await axios.post('http://' + node.ip + ":8080/rate", {
-                rating: ratingValue,
-            }, {
-                headers: { "Content-Type": "application/json" }
-            });
-            console.log('Rating submitted');
-        } catch (err) {
-            console.error('Failed to submit rating', err);
-        } finally {
-            setSubmittingRating(false);
-            handleCloseRating();
-        }
+        sendPayment(true, BigInt(ratingValue));
+        setSubmittingRating(false);
+        handleCloseRating();
     }
 
     return (
@@ -216,7 +227,7 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
                 </CardActions>
             </Card>
 
-            <Dialog open={ratingOpen} onClose={handleCloseRating}>
+            <Dialog open={ratingOpen} onClose={handleNoRating}>
                 <DialogTitle>Rate this server</DialogTitle>
                 <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 320 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -229,7 +240,7 @@ function NodeItem({node, auth}: {node: Node, auth: AccountInfo}) {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseRating} disabled={submittingRating}>Cancel</Button>
+                    <Button onClick={handleNoRating} disabled={submittingRating}>Cancel</Button>
                     <Button onClick={handleSubmitRating} disabled={submittingRating || ratingValue == null} variant="contained">Submit</Button>
                 </DialogActions>
             </Dialog>
