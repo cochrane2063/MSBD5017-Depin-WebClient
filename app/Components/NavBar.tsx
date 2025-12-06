@@ -30,7 +30,7 @@ export default function ButtonAppBar() {
   };
 
   const register = async () => {
-    const clr_deposit_amount = BigInt(10000) * BigInt(1e18); // 10000 CLR
+    const clr_deposit_amount = BigInt(100) * BigInt(1e18); // 100 CLR
     await approveCLRTokenSpending(auth.providerWithInfo.provider, account!);
     await openPaymentChannel(auth.providerWithInfo.provider, account!, clr_deposit_amount);
     setRegistered(true);
@@ -65,6 +65,14 @@ export default function ButtonAppBar() {
               sx={{ color: 'inherit', textDecoration: 'none' }}
             >
               Home
+            </Typography>
+
+            <Typography
+              component={NavLink as any}
+              to="/faucet"
+              sx={{ color: 'inherit', textDecoration: 'none' }}
+            >
+              Faucet
             </Typography>
 
             <Typography

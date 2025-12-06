@@ -5,12 +5,12 @@ import clrTokenJson from './CLRToken/CLRToken.json';
 
 const clearNetABI = (clearNetJson as any).abi ?? clearNetJson;
 const clrTokenABI = (clrTokenJson as any).abi ?? clrTokenJson;
-const clearNetAddress = "0x265da498da1de3f22bb57c717d14806e4884cdda";
+const clearNetAddress = "0x0305e95225f65db13e98c775dbb95b98178ae73b";
 const clrTokenAddress = "0xf1664c17887767c8f58695846babb349ca61d2e9";
 // const clearNetAddress = "0x9a9f2ccfde556a7e9ff0848998aa4a0cfd8863ae";
 // const clrTokenAddress = "0x5fc8d32690cc91d4c39d9d3abcbd16989f875707";
 
-const DEFAULT_MIN_STAKE = BigInt(10000) * BigInt(1e18); // 10000 CLR
+const DEFAULT_MIN_STAKE = BigInt(100) * BigInt(1e18); // 100 CLR
 
 
 export const getActiveNodes = async (provider: any): Promise<Node[]> => {
