@@ -1,87 +1,72 @@
-# Welcome to React Router!
+# Welcome to CLEARNET!
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
-
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+A new Decentralized VPN
 
 ## Getting Started
+Before you use ClearNet make sure you have wireguard installed on your computer.
 
-### Installation
+The download link for wireguard is provided below.
 
-Install the dependencies:
+[Download Wireguard](https://www.wireguard.com/install)
 
+You can start using clearnet by clicking on the link below.
+
+[CLEARNET WebClient](http://depin.msbd.cloud)
+
+## Use the web app
+
+1. When you open the website link above you will be greeted with blank page with no available servers.
+
+2. To connect to your metamask wallet, just click login. Then choose your wallet and connect.
+
+3. Make sure you are using the sepolia test net as the contract is deployed there.
+
+4. When you see the metamask logo on the top right it means you are connected.
+
+5. You need some CLR tokens to register to the network. For testing purposes, we prepared a faucet where you can get some tokens. Go to the Faucet page and click "Claim CLR" to get some Tokens. We suggest you claim it twice to make sure you have enough tokens.
+
+6. After you have some tokens, click the metamask icon on the top right to register to the network.
+
+7. It will ask for your confirmation twice, be patient and wait for the process to complete.
+
+8. When you return to the home page you will see the list of available nodes to connect to.
+
+9. Pick a node and click connect. You will be promted to download the wireguard config file.
+
+10. Import the config fire to your wireguard client. you can start using the VPN now.
+
+11. When you finish click disconnect on the node. You will be prompted to enter a rating for the server. You can choose to rate or not rate. Make sure to click confirm on metamask. (if you choose to rate it will ask for your confirmation twice. The first one is to sign your rating)
+
+## Local Setup
+If you prefer a local setup or the web site above is down, you can follow the instructions below.
+
+### Prerequisites
+Make sure you have nodejs installed on your system 
+
+If not, you can downlaod from their offical website: 
+
+[https://nodejs.org/en/download](https://nodejs.org/en/download)
+
+After you have node installed 
+
+Clone this repository and cd into it
+
+```bash
+cd MSBD5017-Depin-WebClient
+```
+run
 ```bash
 npm install
 ```
+to install all the dependencies
 
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
+next, run
 ```bash
 npm run build
 ```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
+A build folder will appear, you can use your web server of choice to serve this foler or just use the built in web server and run
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+npm start
 ```
+The server will be listening on port 3000.
 
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
